@@ -1,5 +1,2 @@
 onlyBuiltDependencies:
   - esbuild
-
-overrides:
-  '@sveltejs/adapter-vercel': link:../../Library/pnpm/global/5/node_modules/@sveltejs/adapter-vercel

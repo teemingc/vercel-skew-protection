@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dd93089686cb19ab2e814576d1b8fbdc4cd26e29 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..71b15d53fe9019fe25d064d8e6444f4b769327d3 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dd93089686cb19ab2e814576d1b8fbdc
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -632,41 +633,87 @@ function static_vercel_config(builder, config, dir) {
+@@ -632,41 +633,84 @@ function static_vercel_config(builder, config, dir) {
  		}
  	];
  
@@ -104,11 +104,11 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dd93089686cb19ab2e814576d1b8fbdc
 +  );
 +});
 +
-+let timer;
-+
 +self.addEventListener("fetch", (event) => {
 +  event.respondWith(
 +    (async () => {
++			console.log(event);
++
 +			const previous = await caches.match(CACHE_KEY);
 +			let previous_client_map;
 +
@@ -122,12 +122,9 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dd93089686cb19ab2e814576d1b8fbdc
 +				}
 +			}
 +
-+			clearTimeout(timer);
-+			timer = setTimeout(() => {
-+				update_cache(event.clientId);
-+			});
++			const response = await fetch(request);
 +
-+			return fetch(request);
++			return response;
 +		})()
 +  );
 +});

@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8beef6f2bd75 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..9f8d275e4db4d53ac939ece856f700b1e0b139ae 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8bee
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -632,41 +633,60 @@ function static_vercel_config(builder, config, dir) {
+@@ -632,41 +633,74 @@ function static_vercel_config(builder, config, dir) {
  		}
  	];
  
@@ -33,6 +33,13 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8bee
 -					type: 'header',
 -					key: 'Sec-Fetch-Dest',
 -					value: 'document'
+-				}
+-			],
+-			headers: {
+-				'Set-Cookie': `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${builder.config.kit.paths.base}/; SameSite=Strict; Secure; HttpOnly`
+-			},
+-			continue: true
+-		});
 +		fs.writeFileSync(
 +			`${dir}/service-worker.js`,
 +			`
@@ -46,39 +53,37 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8bee
 +  self.skipWaiting();
 +});
 +
-+self.addEventListener("activate", (event) => {
-+	event.waitUntil(
-+    (async () => {
-+			await clients.claim();
-+      const cache = await caches.open(CACHE);
-+			const previous = await cache.match(CACHE_KEY);
-+			const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
-+			let client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
-+			let response;
-+			if (previous) {
-+				const data = await previous.json();
-+				client_map = {
-+					...client_map,
-+					...data
- 				}
--			],
--			headers: {
--				'Set-Cookie': `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${builder.config.kit.paths.base}/; SameSite=Strict; Secure; HttpOnly`
--			},
--			continue: true
--		});
--
++async function update_cache(client_id) {
++	let client_map;
++	let response;
++
++	if (client_id) {
++		client_map = { [client_id]: VERCEL_DEPLOYMENT_ID };
++	} else {
++		const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
++		client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
++	}
+ 
 -		// this is a dreadful hack that is necessary until the Vercel Build Output API
 -		// allows you to set multiple cookies for a single route. essentially, since we
 -		// know that the entry file will be requested immediately, we can set the second
 -		// cookie in _that_ response rather than the document response
 -		const base = `${dir}/${builder.config.kit.appDir}/immutable/entry`;
 -		const entry = fs.readdirSync(base).find((file) => file.startsWith('start.'));
--
++	const cache = await caches.open(CACHE);
++	const previous = await cache.match(CACHE_KEY);
+ 
 -		if (!entry) {
 -			throw new Error('Could not find entry point');
--		}
--
++	if (previous) {
++		const data = await previous.json();
++		for (const key in client_map) {
++			if (key in data) {
++				client_map[key] = data[key];
++			}
+ 		}
++	}
+ 
 -		routes.splice(-2, 0, {
 -			src: `/${builder.getAppPath()}/immutable/entry/${entry}`,
 -			headers: {
@@ -86,10 +91,16 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8bee
 -			},
 -			continue: true
 -		});
-+			} else {
-+				response = Response.json(client_map);
-+			}
-+			await cache.put(CACHE_KEY, response);
++	await cache.put(CACHE_KEY, Response.json(client_map));
++
++	return client_map[client_id] ?? VERCEL_DEPLOYMENT_ID;
++}
++
++self.addEventListener("activate", (event) => {
++	event.waitUntil(
++    (async () => {
++			await clients.claim();
++			await update_cache();
 +    })()
 +  );
 +});
@@ -98,7 +109,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8bee
 +  event.respondWith(
 +    (async () => {
 +			const cache = await caches.match(CACHE_KEY);
-+			const deployment_id = (cache ? (await cache.json())[event.clientId] : undefined) ?? VERCEL_DEPLOYMENT_ID;
++			let deployment_id = cache ? (await cache.json())[event.clientId] : await update_cache(event.clientId);
 +			return fetch(
 +				new Request(event.request, {
 +					headers: { "x-deployment-id": deployment_id },

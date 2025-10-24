@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..f1c4d62b1174354e7480c8953aca6bb3f28190b7 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206f5de7416 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -99,7 +99,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..f1c4d62b1174354e7480c8953aca6bb3
 +  event.respondWith(
 +    (async () => {
 +			const cache = await caches.match(CACHE_KEY);
-+			let deployment_id = cache ? (await cache.json())[event.clientId] : await update_cache(event.clientId);
++			const deployment_id = (cache ? (await cache.json())[event.clientId] : undefined) ?? await update_cache(event.clientId);
 +			return fetch(
 +				new Request(event.request, {
 +					headers: { "x-deployment-id": deployment_id },

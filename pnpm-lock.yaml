@@ -4,16 +4,24 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@sveltejs/adapter-vercel':
+    hash: 003b66132e2fa7c176a86813949ca52e0fa223b7192dd6e4b9a4d3b8e277ee24
+    path: patches/@sveltejs__adapter-vercel.patch
+  '@sveltejs/kit':
+    hash: 18fc32bef669e1fd0e23422d947ff74cba01f5f17999e6ad2cac5e447636b648
+    path: patches/@sveltejs__kit.patch
+
 importers:
 
   .:
     devDependencies:
       '@sveltejs/adapter-vercel':
         specifier: ^6.0.0
-        version: 6.0.0(@sveltejs/kit@2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)
+        version: 6.0.0(patch_hash=003b66132e2fa7c176a86813949ca52e0fa223b7192dd6e4b9a4d3b8e277ee24)(@sveltejs/kit@2.47.3(patch_hash=18fc32bef669e1fd0e23422d947ff74cba01f5f17999e6ad2cac5e447636b648)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)
       '@sveltejs/kit':
         specifier: ^2.43.2
-        version: 2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)
+        version: 2.47.3(patch_hash=18fc32bef669e1fd0e23422d947ff74cba01f5f17999e6ad2cac5e447636b648)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.2.0
         version: 6.2.1(svelte@5.41.3)(vite@7.1.12)
@@ -1027,9 +1035,9 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/adapter-vercel@6.0.0(@sveltejs/kit@2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)':
+  '@sveltejs/adapter-vercel@6.0.0(patch_hash=003b66132e2fa7c176a86813949ca52e0fa223b7192dd6e4b9a4d3b8e277ee24)(@sveltejs/kit@2.47.3(patch_hash=18fc32bef669e1fd0e23422d947ff74cba01f5f17999e6ad2cac5e447636b648)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)':
     dependencies:
-      '@sveltejs/kit': 2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)
+      '@sveltejs/kit': 2.47.3(patch_hash=18fc32bef669e1fd0e23422d947ff74cba01f5f17999e6ad2cac5e447636b648)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)
       '@vercel/nft': 0.30.3(rollup@4.52.5)
       esbuild: 0.25.11
     transitivePeerDependencies:
@@ -1037,7 +1045,7 @@ snapshots:
       - rollup
       - supports-color
 
-  '@sveltejs/kit@2.47.3(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)':
+  '@sveltejs/kit@2.47.3(patch_hash=18fc32bef669e1fd0e23422d947ff74cba01f5f17999e6ad2cac5e447636b648)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)':
     dependencies:
       '@standard-schema/spec': 1.0.0
       '@sveltejs/acorn-typescript': 1.0.6(acorn@8.15.0)

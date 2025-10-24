@@ -1,2 +1,6 @@
 onlyBuiltDependencies:
   - esbuild
+
+patchedDependencies:
+  '@sveltejs/adapter-vercel': patches/@sveltejs__adapter-vercel.patch
+  '@sveltejs/kit': patches/@sveltejs__kit.patch

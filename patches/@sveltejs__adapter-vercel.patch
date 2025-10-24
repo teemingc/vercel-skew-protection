@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206f5de7416 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..e4315e3e6b78637389a514827aaaff8535121d96 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -634,39 +635,64 @@ function static_vercel_config(builder, config, dir) {
+@@ -634,39 +635,67 @@ function static_vercel_config(builder, config, dir) {
  
  	// https://vercel.com/docs/deployments/skew-protection
  	if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
@@ -43,16 +43,6 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206
 +const CACHE = "__SVELTEKIT_VERCEL_SKEW_PROTECTION__";
 +
 +const CACHE_KEY = "/_app/vercel-skew-protection";
-+
-+const VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
-+
-+self.addEventListener("install", (event) => {
-+  self.skipWaiting();
-+});
-+
-+async function update_cache(client_id) {
-+	const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
-+	const client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
  
 -		// this is a dreadful hack that is necessary until the Vercel Build Output API
 -		// allows you to set multiple cookies for a single route. essentially, since we
@@ -60,19 +50,23 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206
 -		// cookie in _that_ response rather than the document response
 -		const base = `${dir}/${builder.config.kit.appDir}/immutable/entry`;
 -		const entry = fs.readdirSync(base).find((file) => file.startsWith('start.'));
-+	const cache = await caches.open(CACHE);
-+	const previous = await cache.match(CACHE_KEY);
++const VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
  
 -		if (!entry) {
 -			throw new Error('Could not find entry point');
++self.addEventListener("install", (event) => {
++  self.skipWaiting();
++});
++
++async function update_cache(client_id) {
++	const previous = await caches.match(CACHE_KEY);
++
 +	if (previous) {
 +		const data = await previous.json();
-+		for (const key in client_map) {
-+			if (key in data) {
-+				client_map[key] = data[key];
-+			}
++
++		if (client_id && client_id in data) {
++			return client_map[client_id];
  		}
-+	}
  
 -		routes.splice(-2, 0, {
 -			src: `/${builder.getAppPath()}/immutable/entry/${entry}`,
@@ -81,6 +75,17 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206
 -			},
 -			continue: true
 -		});
++		const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
++		const client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
++
++		for (const key in client_map) {
++			if (key in data) {
++				client_map[key] = data[key];
++			}
++		}
++	}
++
++	const cache = await caches.open(CACHE);
 +	await cache.put(CACHE_KEY, Response.json(client_map));
 +
 +	return client_map[client_id] ?? VERCEL_DEPLOYMENT_ID;
@@ -98,13 +103,11 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..64556f3744311e5ce3d0f6a8b8d16206
 +self.addEventListener("fetch", (event) => {
 +  event.respondWith(
 +    (async () => {
-+			const cache = await caches.match(CACHE_KEY);
-+			const deployment_id = (cache ? (await cache.json())[event.clientId] : undefined) ?? await update_cache(event.clientId);
 +			return fetch(
 +				new Request(event.request, {
-+					headers: { "x-deployment-id": deployment_id },
++					headers: { "x-deployment-id": await update_cache(event.clientId) },
 +				})
-+			)
++			);
 +		})()
 +  );
 +});

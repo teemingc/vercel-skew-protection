@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..3eab9746c337b375a7646d233f892cd90b6d52a8 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..fdfacdd15d0fc8b8f70e97073732c20b72d9a2c8 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -105,10 +105,10 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..3eab9746c337b375a7646d233f892cd9
 +});
 +
 +self.addEventListener("fetch", (event) => {
-+	const client_id = event.resultingClientId || event.clientId;
-+
 +  event.respondWith(
 +    (async () => {
++			const client_id = event.resultingClientId || event.clientId;
++
 +			const previous = await caches.match(CACHE_KEY);
 +			let previous_client_map;
 +
@@ -124,12 +124,12 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..3eab9746c337b375a7646d233f892cd9
 +
 +			const response = await fetch(request);
 +
-+			if (!event.resultingClientId) {
-+				event.waitUntil(async () => {
++			event.waitUntil(async () => {
++				if (!event.resultingClientId) {
 +					await event.handled;
-+					await update_cache(client_id);
-+				});
-+			}
++					return update_cache(client_id);
++				}
++			});
 +
 +			return response;
 +		})()

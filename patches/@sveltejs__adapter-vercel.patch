@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..33bfbeca4edf20897d060badbd02375c93aef0cc 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..8af3b830ea73ff01c2c440cd2c4f8beef6f2bd75 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -53,12 +53,12 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..33bfbeca4edf20897d060badbd02375c
 +      const cache = await caches.open(CACHE);
 +			const previous = await cache.match(CACHE_KEY);
 +			const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
-+			let clients = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
++			let client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
 +			let response;
 +			if (previous) {
 +				const data = await previous.json();
-+				clients = {
-+					...clients,
++				client_map = {
++					...client_map,
 +					...data
  				}
 -			],
@@ -87,7 +87,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..33bfbeca4edf20897d060badbd02375c
 -			continue: true
 -		});
 +			} else {
-+				response = Response.json(clients);
++				response = Response.json(client_map);
 +			}
 +			await cache.put(CACHE_KEY, response);
 +    })()
@@ -98,7 +98,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..33bfbeca4edf20897d060badbd02375c
 +  event.respondWith(
 +    (async () => {
 +			const cache = await caches.match(CACHE_KEY);
-+			const deployment_id = cache ? (await cache.json())[event.clientId] : VERCEL_DEPLOYMENT_ID;
++			const deployment_id = (cache ? (await cache.json())[event.clientId] : undefined) ?? VERCEL_DEPLOYMENT_ID;
 +			return fetch(
 +				new Request(event.request, {
 +					headers: { "x-deployment-id": deployment_id },

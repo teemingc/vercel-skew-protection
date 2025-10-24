@@ -1,8 +1,25 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5a8ef7e960a3676d48d28c11b58340d42f99e559 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5e4e4d444ec433009e4c5cabf903bd3143369847 100644
 --- a/index.js
 +++ b/index.js
-@@ -634,39 +634,15 @@ function static_vercel_config(builder, config, dir) {
+@@ -51,6 +51,8 @@ const get_default_runtime = () => {
+ // https://vercel.com/docs/functions/edge-functions/edge-runtime#compatible-node.js-modules
+ const compatible_node_modules = ['async_hooks', 'events', 'buffer', 'assert', 'util'];
+ 
++const dir = '.vercel/output';
++
+ /** @type {import('./index.js').default} **/
+ const plugin = function (defaults = {}) {
+ 	if ('edge' in defaults) {
+@@ -68,7 +70,6 @@ const plugin = function (defaults = {}) {
+ 				);
+ 			}
+ 
+-			const dir = '.vercel/output';
+ 			const tmp = builder.getBuildDirectory('vercel-tmp');
+ 
+ 			builder.rimraf(dir);
+@@ -634,39 +635,15 @@ function static_vercel_config(builder, config, dir) {
  
  	// https://vercel.com/docs/deployments/skew-protection
  	if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
@@ -40,7 +57,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5a8ef7e960a3676d48d28c11b58340d4
 -			continue: true
 -		});
 +		fs.writeFileSync(
-+			`${builder.getClientDirectory()}/service-worker.js`,
++			`${dir}/service-worker.js`,
 +			`
 +self.addEventListener("fetch", (event) => {
 +  if (event.request.headers.has("x-deployment-id")) return;

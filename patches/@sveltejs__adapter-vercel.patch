@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..fdfacdd15d0fc8b8f70e97073732c20b72d9a2c8 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..bf482def8ae71445c38cfd53a55c45650a3ab8fc 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -124,12 +124,12 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..fdfacdd15d0fc8b8f70e97073732c20b
 +
 +			const response = await fetch(request);
 +
-+			event.waitUntil(async () => {
-+				if (!event.resultingClientId) {
-+					await event.handled;
-+					return update_cache(client_id);
-+				}
-+			});
++			if (!event.resultingClientId) {
++				event.waitUntil((async () => {
++						await event.handled;
++						return update_cache(client_id);
++				})());
++			}
 +
 +			return response;
 +		})()

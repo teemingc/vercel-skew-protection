@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..260d34d27bff3e1060d914b81fb27cb07033720f 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..ccaae1df8fc67e726610b928249d259c96783392 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..260d34d27bff3e1060d914b81fb27cb0
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -632,41 +633,84 @@ function static_vercel_config(builder, config, dir) {
+@@ -632,41 +633,73 @@ function static_vercel_config(builder, config, dir) {
  		}
  	];
  
@@ -47,12 +47,6 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..260d34d27bff3e1060d914b81fb27cb0
 +const CACHE = "__SVELTEKIT_VERCEL_SKEW_PROTECTION__";
 +
 +const CACHE_KEY = "/_app/vercel-skew-protection";
-+
-+const VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
-+
-+self.addEventListener("install", (event) => {
-+  self.skipWaiting();
-+});
  
 -		// this is a dreadful hack that is necessary until the Vercel Build Output API
 -		// allows you to set multiple cookies for a single route. essentially, since we
@@ -60,12 +54,18 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..260d34d27bff3e1060d914b81fb27cb0
 -		// cookie in _that_ response rather than the document response
 -		const base = `${dir}/${builder.config.kit.appDir}/immutable/entry`;
 -		const entry = fs.readdirSync(base).find((file) => file.startsWith('start.'));
-+async function update_cache(client_id) {
-+	const previous = await caches.match(CACHE_KEY);
-+	let previous_client_map;
++const VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
  
 -		if (!entry) {
 -			throw new Error('Could not find entry point');
++self.addEventListener("install", (event) => {
++  self.skipWaiting();
++});
++
++async function update_cache(client_id) {
++	const previous = await caches.match(CACHE_KEY);
++	let previous_client_map;
++
 +	if (previous) {
 +		previous_client_map = await previous.json();
 +
@@ -107,22 +107,11 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..260d34d27bff3e1060d914b81fb27cb0
 +self.addEventListener("fetch", (event) => {
 +  event.respondWith(
 +    (async () => {
-+			const previous = await caches.match(CACHE_KEY);
-+			let previous_client_map;
++			let response = await fetch(event.request);
 +
-+			let request = event.request;
-+
-+			if (previous) {
-+				previous_client_map = await previous.json();
-+
-+				if (event.clientId && event.clientId in previous_client_map) {
-+					request = new Request(event.request, { headers: { ...event.request.headers, "x-deployment-id": previous_client_map[event.clientId] } });
-+				}
++			if (!response.ok) {
++				return fetch(new Request(event.request, { headers: { ...event.request.headers, "x-deployment-id": await update_cache(event.clientId) } }))
 +			}
-+
-+			const response = await fetch(request);
-+
-+			await update_cache(event.clientId);
 +
 +			return response;
 +		})()

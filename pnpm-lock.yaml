@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@sveltejs/adapter-vercel':
-    hash: 692998e4bee55e9281dbbad0bdb40671e00c38c1363e148454e21e43cad54ca3
+    hash: d8271b40190f96aa1569ab897bc104bab18f4cda53192ac4c06694cdeba96132
     path: patches/@sveltejs__adapter-vercel.patch
   '@sveltejs/kit':
     hash: bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1
@@ -18,7 +18,7 @@ importers:
     devDependencies:
       '@sveltejs/adapter-vercel':
         specifier: ^6.0.0
-        version: 6.0.0(patch_hash=692998e4bee55e9281dbbad0bdb40671e00c38c1363e148454e21e43cad54ca3)(@sveltejs/kit@2.47.3(patch_hash=bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)
+        version: 6.0.0(patch_hash=d8271b40190f96aa1569ab897bc104bab18f4cda53192ac4c06694cdeba96132)(@sveltejs/kit@2.47.3(patch_hash=bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)
       '@sveltejs/kit':
         specifier: ^2.43.2
         version: 2.47.3(patch_hash=bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)
@@ -1035,7 +1035,7 @@ snapshots:
     dependencies:
       acorn: 8.15.0
 
-  '@sveltejs/adapter-vercel@6.0.0(patch_hash=692998e4bee55e9281dbbad0bdb40671e00c38c1363e148454e21e43cad54ca3)(@sveltejs/kit@2.47.3(patch_hash=bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)':
+  '@sveltejs/adapter-vercel@6.0.0(patch_hash=d8271b40190f96aa1569ab897bc104bab18f4cda53192ac4c06694cdeba96132)(@sveltejs/kit@2.47.3(patch_hash=bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12))(rollup@4.52.5)':
     dependencies:
       '@sveltejs/kit': 2.47.3(patch_hash=bf69f229a008b74eedaaf5114d1091bf5af17cdd6d55331659968afb722dfda1)(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.41.3)(vite@7.1.12))(svelte@5.41.3)(vite@7.1.12)
       '@vercel/nft': 0.30.3(rollup@4.52.5)

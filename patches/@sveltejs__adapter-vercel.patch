@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dc8aa32f4c1976415ad5d4eab610a7339dbf6bfb 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..33bfbeca4edf20897d060badbd02375c93aef0cc 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,8 +19,11 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dc8aa32f4c1976415ad5d4eab610a733
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -634,39 +635,21 @@ function static_vercel_config(builder, config, dir) {
+@@ -632,41 +633,60 @@ function static_vercel_config(builder, config, dir) {
+ 		}
+ 	];
  
++	// TODO: avoid proxying request if page is on first load
  	// https://vercel.com/docs/deployments/skew-protection
  	if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
 -		routes.push({
@@ -30,7 +33,34 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dc8aa32f4c1976415ad5d4eab610a733
 -					type: 'header',
 -					key: 'Sec-Fetch-Dest',
 -					value: 'document'
--				}
++		fs.writeFileSync(
++			`${dir}/service-worker.js`,
++			`
++const CACHE = "__SVELTEKIT_VERCEL_SKEW_PROTECTION__";
++
++const CACHE_KEY = "/_app/vercel-skew-protection";
++
++const VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
++
++self.addEventListener("install", (event) => {
++  self.skipWaiting();
++});
++
++self.addEventListener("activate", (event) => {
++	event.waitUntil(
++    (async () => {
++			await clients.claim();
++      const cache = await caches.open(CACHE);
++			const previous = await cache.match(CACHE_KEY);
++			const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
++			let clients = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
++			let response;
++			if (previous) {
++				const data = await previous.json();
++				clients = {
++					...clients,
++					...data
+ 				}
 -			],
 -			headers: {
 -				'Set-Cookie': `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${builder.config.kit.paths.base}/; SameSite=Strict; Secure; HttpOnly`
@@ -56,18 +86,26 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..dc8aa32f4c1976415ad5d4eab610a733
 -			},
 -			continue: true
 -		});
-+		fs.writeFileSync(
-+			`${dir}/service-worker.js`,
-+			`
-+self.addEventListener("install", (event) => {
-+	self.skipWaiting();
++			} else {
++				response = Response.json(clients);
++			}
++			await cache.put(CACHE_KEY, response);
++    })()
++  );
 +});
-+self.addEventListener("activate", (event) => {
-+	event.waitUntil(clients.claim());
-+});
++
 +self.addEventListener("fetch", (event) => {
-+  if (event.request.headers.has("x-deployment-id")) return;
-+  event.respondWith(fetch(new Request(event.request, { headers: { "x-deployment-id": "${process.env.VERCEL_DEPLOYMENT_ID}" } })));
++  event.respondWith(
++    (async () => {
++			const cache = await caches.match(CACHE_KEY);
++			const deployment_id = cache ? (await cache.json())[event.clientId] : VERCEL_DEPLOYMENT_ID;
++			return fetch(
++				new Request(event.request, {
++					headers: { "x-deployment-id": deployment_id },
++				})
++			)
++		})()
++  );
 +});
 +		`.trim()
 +		);

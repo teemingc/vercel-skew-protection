@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..e4315e3e6b78637389a514827aaaff8535121d96 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..e911e968f9c3085e0d4566e53cf5d70312e1af77 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..e4315e3e6b78637389a514827aaaff85
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -634,39 +635,67 @@ function static_vercel_config(builder, config, dir) {
+@@ -634,39 +635,68 @@ function static_vercel_config(builder, config, dir) {
  
  	// https://vercel.com/docs/deployments/skew-protection
  	if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
@@ -60,13 +60,15 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..e4315e3e6b78637389a514827aaaff85
 +
 +async function update_cache(client_id) {
 +	const previous = await caches.match(CACHE_KEY);
++	let previous_client_map;
 +
 +	if (previous) {
-+		const data = await previous.json();
++		previous_client_map = await previous.json();
 +
-+		if (client_id && client_id in data) {
-+			return client_map[client_id];
++		if (client_id && client_id in previous_client_map) {
++			return previous_client_map[client_id];
  		}
++	}
  
 -		routes.splice(-2, 0, {
 -			src: `/${builder.getAppPath()}/immutable/entry/${entry}`,
@@ -75,13 +77,12 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..e4315e3e6b78637389a514827aaaff85
 -			},
 -			continue: true
 -		});
-+		const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
-+		const client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
++	const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
++	const client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
 +
-+		for (const key in client_map) {
-+			if (key in data) {
-+				client_map[key] = data[key];
-+			}
++	for (const key in client_map) {
++		if (previous_client_map && key in previous_client_map) {
++			client_map[key] = previous_client_map[key];
 +		}
 +	}
 +

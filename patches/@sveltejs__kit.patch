@@ -11,3 +11,16 @@ index 4a441b23d4d54ee10dd093733a4b2b60ab0742db..ed7978193f8cdb03a71b4f04afe89e8f
  					client: null,
  					server_manifest
  				};
+diff --git a/src/runtime/server/page/render.js b/src/runtime/server/page/render.js
+index c3905d035b84b3664ae86aca6c1094c69df0bcd6..cb595d7923483faad4ed90d2b6e54def1bf10360 100644
+--- a/src/runtime/server/page/render.js
++++ b/src/runtime/server/page/render.js
+@@ -536,7 +536,7 @@ export async function render_response({
+ 			blocks.push(boot);
+ 		}
+ 
+-		if (options.service_worker) {
++		if (true) {
+ 			let opts = DEV ? ", { type: 'module' }" : '';
+ 			if (options.service_worker_options != null) {
+ 				const service_worker_options = { ...options.service_worker_options };

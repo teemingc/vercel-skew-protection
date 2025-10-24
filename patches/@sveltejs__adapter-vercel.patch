@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5e7b76864062c553800567653b6bfd6fdb6d1e55 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..f1c4d62b1174354e7480c8953aca6bb3f28190b7 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5e7b76864062c553800567653b6bfd6f
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -634,39 +635,71 @@ function static_vercel_config(builder, config, dir) {
+@@ -634,39 +635,64 @@ function static_vercel_config(builder, config, dir) {
  
  	// https://vercel.com/docs/deployments/skew-protection
  	if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
@@ -51,15 +51,8 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5e7b76864062c553800567653b6bfd6f
 +});
 +
 +async function update_cache(client_id) {
-+	let client_map;
-+	let response;
-+
-+	if (client_id) {
-+		client_map = { [client_id]: VERCEL_DEPLOYMENT_ID };
-+	} else {
-+		const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
-+		client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
-+	}
++	const client_ids = await clients.matchAll({ type: "all", includeUncontrolled: true });
++	const client_map = Object.fromEntries(client_ids.map((client) => [client.id, VERCEL_DEPLOYMENT_ID]));
  
 -		// this is a dreadful hack that is necessary until the Vercel Build Output API
 -		// allows you to set multiple cookies for a single route. essentially, since we

@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5e4e4d444ec433009e4c5cabf903bd3143369847 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..7f65d2d515c5410e306a937602f5c5eaf8dc4c0f 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -61,7 +61,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..5e4e4d444ec433009e4c5cabf903bd31
 +			`
 +self.addEventListener("fetch", (event) => {
 +  if (event.request.headers.has("x-deployment-id")) return;
-+  event.respondWith(fetch(new Request(event.request, { headers: { "x-deployment-id": ${process.env.VERCEL_DEPLOYMENT_ID} } })));
++  event.respondWith(fetch(new Request(event.request, { headers: { "x-deployment-id": "${process.env.VERCEL_DEPLOYMENT_ID}" } })));
 +});
 +		`.trim()
 +		);

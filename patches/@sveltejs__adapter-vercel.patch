@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..bf482def8ae71445c38cfd53a55c45650a3ab8fc 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..643589a4c8d50209a9143a0562c774ff5637ca39 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..bf482def8ae71445c38cfd53a55c4565
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -632,41 +633,91 @@ function static_vercel_config(builder, config, dir) {
+@@ -632,41 +633,89 @@ function static_vercel_config(builder, config, dir) {
  		}
  	];
  
@@ -48,7 +48,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..bf482def8ae71445c38cfd53a55c4565
 +
 +const CACHE_KEY = "/_app/vercel-skew-protection";
 +
-+const VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
++let VERCEL_DEPLOYMENT_ID = "${process.env.VERCEL_DEPLOYMENT_ID}";
 +
 +self.addEventListener("install", (event) => {
 +  self.skipWaiting();
@@ -122,18 +122,16 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..bf482def8ae71445c38cfd53a55c4565
 +				}
 +			}
 +
-+			const response = await fetch(request);
-+
-+			if (!event.resultingClientId) {
-+				event.waitUntil((async () => {
-+						await event.handled;
-+						return update_cache(client_id);
-+				})());
-+			}
-+
-+			return response;
++			return fetch(request);
 +		})()
 +  );
++});
++
++self.addEventListener("message", (event) => {
++	if (event.data?.__SVELTEKIT_VERCEL_SKEW_PROTECTION__) {
++		VERCEL_DEPLOYMENT_ID = event.data.__SVELTEKIT_VERCEL_SKEW_PROTECTION__;
++		update_cache();
++	}
 +});
 +		`.trim()
 +		);

@@ -1,5 +1,5 @@
 diff --git a/index.js b/index.js
-index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..84e8099207fc6631078aac5f62d3e251a2d7bcb8 100644
+index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..7ca0bd544fc477252712047ad8439f247523d877 100644
 --- a/index.js
 +++ b/index.js
 @@ -51,6 +51,8 @@ const get_default_runtime = () => {
@@ -19,7 +19,7 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..84e8099207fc6631078aac5f62d3e251
  			const tmp = builder.getBuildDirectory('vercel-tmp');
  
  			builder.rimraf(dir);
-@@ -632,41 +633,68 @@ function static_vercel_config(builder, config, dir) {
+@@ -632,41 +633,67 @@ function static_vercel_config(builder, config, dir) {
  		}
  	];
  
@@ -52,15 +52,15 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..84e8099207fc6631078aac5f62d3e251
 +self.addEventListener("fetch", (event) => {
 +  event.respondWith(
 +    (async () => {
-+			const previous = await caches.match(CACHE_KEY);
++			const cache = await caches.match(CACHE_KEY);
 +
 +			let request = event.request;
 +
-+			if (previous) {
-+				const previous_client_map = await previous.json();
++			if (cache) {
++				const client_map = await cache.json();
 +				const client_id = event.resultingClientId || event.clientId;
-+				if (client_id in previous_client_map) {
-+					request = new Request(event.request, { headers: { ...event.request.headers, "x-deployment-id": previous_client_map[client_id] } });
++				if (client_id in client_map) {
++					request = new Request(event.request, { headers: { ...event.request.headers, "x-deployment-id": client_map[client_id] } });
  				}
 -			],
 -			headers: {
@@ -87,14 +87,13 @@ index d4ec606663b0e2bdbd0b1a3f5a3e4bdf38323020..84e8099207fc6631078aac5f62d3e251
 -		const base = `${dir}/${builder.config.kit.appDir}/immutable/entry`;
 -		const entry = fs.readdirSync(base).find((file) => file.startsWith('start.'));
 +		const previous = await caches.match(CACHE_KEY);
-+		let previous_client_map;
  
 -		if (!entry) {
 -			throw new Error('Could not find entry point');
 +		if (previous) {
-+			previous_client_map = await previous.json();
++			const previous_client_map = await previous.json();
 +			for (const key in client_map) {
-+				if (previous_client_map && key in previous_client_map) {
++				if (key in previous_client_map) {
 +					client_map[key] = previous_client_map[key];
 +				}
 +			}
